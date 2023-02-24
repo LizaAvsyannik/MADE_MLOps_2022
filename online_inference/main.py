@@ -1,11 +1,14 @@
 import os
 import pickle
+import time
 
 import pandas as pd
 from fastapi import FastAPI
 from fastapi_health import health
 
 from schemas import MedicalData
+
+start = 0
 
 app = FastAPI()
 
@@ -15,6 +18,9 @@ transformer = None
 
 @app.on_event('startup')
 def load_model():
+    global start
+    time.sleep(20)
+    start = time.time()
     path_to_model = os.getenv('PATH_TO_MODEL')
     path_to_transformer = os.getenv('PATH_TO_TRANSFORMER')
 
@@ -37,6 +43,9 @@ async def predict(data: MedicalData):
 
 
 def check_ready():
+    global start
+    if time.time() - start > 60:
+        raise RuntimeError
     return model is not None and transformer is not None
 
 
